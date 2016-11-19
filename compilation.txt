@@ -1,0 +1,8 @@
+Compilation instructions:
+
+Windows:
+cl /EHsc -Zi <path_to_source.cpp> opengl32.lib glu32.lib glut32.lib -link -LIBPATH:"<path_to_lib>" 
+
+OSX:
+
+g++ -w -framework OpenGL -framework GLUT -o source source.cpp
