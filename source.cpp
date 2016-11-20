@@ -4,6 +4,9 @@
   #include <GL/glut.h>
 #endif
 
+#include <math.h>
+#include <stdio.h>
+
 #define WIDTH 600
 #define HEIGHT 600
 #define WINDOW_STARTX 100
@@ -40,6 +43,10 @@ struct Camera
     float eye[3];
     float lookAt[3];
     float up[3];
+
+    float u[3];
+    float v[3];
+    float w[3];
 };
 
 static Sphere spheres[3];
@@ -50,13 +57,17 @@ void glInit();
 void reshape(int width, int height);
 void display();
 void setupMVPMatrices();
-void defineSpheres();
+void defineSceneObjects();
 void traceRay();
+void calculateCameraCoordinateSystem();
+void normalize(float* vec, int size);
 
 int main(int argc, char* argv[])
 {
     glutInit(&argc, argv);
     glInit();
+
+    defineSceneObjects();
 
     glutMainLoop();
 
@@ -123,6 +134,21 @@ void traceRay() {
 
 void defineSceneObjects()
 {
+    // Define the camera
+    cam.eye[0] = 0.0f;
+    cam.eye[1] = 10.0f;
+    cam.eye[2] = -5.0f;
+    
+    cam.lookAt[0] = 0.0f;
+    cam.lookAt[1] = 0.0f;
+    cam.lookAt[2] = 0.0f;
+
+    cam.up[0] = 0.0f;
+    cam.up[1] = 1.0f;
+    cam.up[2] = 0.0f;
+
+    // Define the coordinate systems for the camera based on its position/lookAt definitions
+    calculateCameraCoordinateSystem();
     
     // Define overall background properties
     bg.backgroundColor[0] = 0.0f;
@@ -168,5 +194,38 @@ void defineSceneObjects()
     //spheres[2].specularColor[0] = ;
     //spheres[2].specularColor[1] = ;
     //spheres[2].specularColor[2] = ;
+
+}
+
+void calculateCameraCoordinateSystem()
+{
+    
+    cam.w[0] = -(cam.lookAt[0] - cam.eye[0]);
+    cam.w[1] = -(cam.lookAt[1] - cam.eye[1]);
+    cam.w[2] = -(cam.lookAt[2] - cam.eye[2]);
+
+    normalize(cam.w, 3);
+
+}
+
+void normalize(float* vec, int size)
+{
+
+    float magnitude_sqrt = 0.0f;
+    
+    for (int i = 0; i < size; i++)
+    {
+	magnitude_sqrt += vec[i]*vec[i];
+    }
+
+    magnitude_sqrt = sqrt(magnitude_sqrt);
+
+    if (magnitude_sqrt != 0)
+    {
+	for (int i = 0; i < size; i++)
+	{
+	    vec[i] /= magnitude_sqrt;
+	}
+    }
 
 }
