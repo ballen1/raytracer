@@ -58,10 +58,11 @@ void reshape(int width, int height);
 void display();
 void setupMVPMatrices();
 void defineSceneObjects();
-void traceRay();
+void traceRay(float* pixel);
 void calculateCameraCoordinateSystem();
 void normalize(float* vec, int size);
 void crossProduct(float a[], float b[], float* result);
+void viewportToWindow(int i, int j, float* result);
 
 int main(int argc, char* argv[])
 {
@@ -113,14 +114,21 @@ void display()
     
     glPushMatrix();
     
+    glBegin(GL_POINTS);
+
+    float pixel[3];
+
     for (int i = 0; i < HEIGHT; i++)
     {
 	for (int j = 0; j < WIDTH; j++)
 	{
-	    traceRay();
+	    traceRay(pixel);
+	    glColor3fv(pixel);
+	    glVertex3f(i, j , 0);
 	}
     }
     
+    glEnd();
 
     glPopMatrix();
 
@@ -129,7 +137,7 @@ void display()
     glutPostRedisplay();
 }
 
-void traceRay() {
+void traceRay(float* pixel) {
 
 }
 
@@ -241,4 +249,18 @@ void crossProduct(float a[], float b[], float* result)
     result[0] = (a[1]*b[2] - a[2]*b[1]);
     result[1] = (a[2]*b[0] - a[0]*b[2]);
     result[2] = (a[0]*b[3] - a[3]*b[0]);
+}
+
+void viewportToWindow(int i, int j, float* result)
+{
+    
+    // Calculate u
+    result[0] = i;
+
+    // Calculate v
+    result[1] = j;
+
+    // Calculate w
+    result[2] = -cam.eye[2];
+
 }
