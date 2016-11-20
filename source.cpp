@@ -11,6 +11,27 @@
 
 #define EXTENT 50
 
+static GLUquadric* SphereQuadric = gluNewQuadric();
+
+struct Vec3 
+{
+    float x;
+    float y;
+    float z;
+};
+
+struct Sphere 
+{
+    Vec3 center;
+    float radius;
+};
+
+struct RectanglePlane
+{
+    Vec3 points[4];
+};
+
+
 void glInit();
 void reshape(int width, int height);
 void display();
@@ -28,17 +49,15 @@ int main(int argc, char* argv[])
 
 void glInit()
 {
-    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
+    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
     glutInitWindowSize(SCREEN_WIDTH, SCREEN_HEIGHT);
     glutInitWindowPosition(WINDOW_STARTX, WINDOW_STARTY);
 
     glutCreateWindow("Ray Tracer");
 
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-
-    glPolygonMode(GL_FRONT, GL_FILL);
     
-    glEnable(GL_DEPTH_TEST);
+    glDisable(GL_DEPTH_TEST);
 
     glutReshapeFunc(reshape);
     glutDisplayFunc(display);
@@ -54,7 +73,7 @@ void setupMVPMatrices()
 {
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    glOrtho(-EXTENT, EXTENT, -EXTENT, EXTENT, -EXTENT, EXTENT);
+    glOrtho(0, EXTENT, 0, EXTENT, -1, 1);
 
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
@@ -62,7 +81,14 @@ void setupMVPMatrices()
 
 void display()
 {
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT);
+    
+    glPushMatrix();
+    
+    
+    glPopMatrix();
 
     glutSwapBuffers();
+
+    glutPostRedisplay();
 }
