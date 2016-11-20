@@ -61,6 +61,7 @@ void defineSceneObjects();
 void traceRay();
 void calculateCameraCoordinateSystem();
 void normalize(float* vec, int size);
+void crossProduct(float a[], float b[], float* result);
 
 int main(int argc, char* argv[])
 {
@@ -206,6 +207,12 @@ void calculateCameraCoordinateSystem()
 
     normalize(cam.w, 3);
 
+    crossProduct(cam.up, cam.w, cam.u);
+    normalize(cam.u, 3);
+
+    crossProduct(cam.w, cam.u, cam.v);
+    normalize(cam.v, 3);
+
 }
 
 void normalize(float* vec, int size)
@@ -227,5 +234,11 @@ void normalize(float* vec, int size)
 	    vec[i] /= magnitude_sqrt;
 	}
     }
+}
 
+void crossProduct(float a[], float b[], float* result)
+{
+    result[0] = (a[1]*b[2] - a[2]*b[1]);
+    result[1] = (a[2]*b[0] - a[0]*b[2]);
+    result[2] = (a[0]*b[3] - a[3]*b[0]);
 }
