@@ -58,11 +58,14 @@ void reshape(int width, int height);
 void display();
 void setupMVPMatrices();
 void defineSceneObjects();
-void traceRay(float* pixel);
+void traceRay(float* pixel, int i, int j);
 void calculateCameraCoordinateSystem();
 void normalize(float* vec, int size);
+float magnitude(float vec[], int size);
 void crossProduct(float a[], float b[], float* result);
+float dotProduct(float a[], float b[]);
 void viewportToWindow(int i, int j, float* result);
+int sphereIntersection(float eye[], float dir[], Sphere sphere);
 
 int main(int argc, char* argv[])
 {
@@ -122,7 +125,7 @@ void display()
     {
 	for (int j = 0; j < WIDTH; j++)
 	{
-	    traceRay(pixel);
+	    traceRay(pixel, i, j);
 	    glColor3fv(pixel);
 	    glVertex3f(i, j , 0);
 	}
@@ -137,8 +140,32 @@ void display()
     glutPostRedisplay();
 }
 
-void traceRay(float* pixel) {
+void traceRay(float* pixel, int i, int j) {
 
+    float dir[3];
+
+    viewportToWindow(i, j, dir);
+
+    float sphereHit = 0;
+
+    for (int k = 0; k < 3; k++)
+    {
+	if(sphereIntersection(cam.eye, dir, spheres[k]))
+	{
+	    sphereHit = 1;
+	    pixel[0] = spheres[k].diffuseColor[0];
+	    pixel[1] = spheres[k].diffuseColor[1];
+	    pixel[2] = spheres[k].diffuseColor[2];
+	    break;
+	}
+    }
+
+    if (!sphereHit)
+    {
+	pixel[0] = bg.backgroundColor[0];
+	pixel[1] = bg.backgroundColor[1];
+	pixel[2] = bg.backgroundColor[2];
+    }
 }
 
 void defineSceneObjects()
@@ -226,6 +253,7 @@ void calculateCameraCoordinateSystem()
 void normalize(float* vec, int size)
 {
 
+    // TODO: Switch this to magnitude function
     float magnitude_sqrt = 0.0f;
     
     for (int i = 0; i < size; i++)
@@ -244,11 +272,28 @@ void normalize(float* vec, int size)
     }
 }
 
+float magnitude(float vec[], int size)
+{
+    float mag = 0.0f;
+
+    for (int i = 0; i < size; i++)
+    {
+	mag += vec[i]*vec[i];
+    }
+
+    return sqrt(mag);
+}
+
 void crossProduct(float a[], float b[], float* result)
 {
     result[0] = (a[1]*b[2] - a[2]*b[1]);
     result[1] = (a[2]*b[0] - a[0]*b[2]);
     result[2] = (a[0]*b[3] - a[3]*b[0]);
+}
+
+float dotProduct(float a[], float b[])
+{
+    return (a[0]*b[0] + a[1]*b[1] + a[2]*b[2]);
 }
 
 void viewportToWindow(int i, int j, float* result)
@@ -262,5 +307,27 @@ void viewportToWindow(int i, int j, float* result)
 
     // Calculate w
     result[2] = -cam.eye[2];
+
+}
+
+int sphereIntersection(float eye[], float dir[], Sphere sphere)
+{
+    float a, b, c;
+
+    a = magnitude(eye, 3)*magnitude(eye,3);
+    b = dotProduct(eye, dir);
+    c = magnitude(dir, 3)*magnitude(dir, 3);
+
+    float disct = b*b - a*c;
+
+    if (disct > 0)
+    {
+	// TODO: calculate t to find exact point of intersection
+	return (1);
+    }
+    else
+    {
+	return (0);
+    }
 
 }
