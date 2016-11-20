@@ -11,8 +11,6 @@
 
 #define EXTENT 50
 
-static GLUquadric* SphereQuadric = gluNewQuadric();
-
 struct Vec3 
 {
     float x;
@@ -24,6 +22,8 @@ struct Sphere
 {
     Vec3 center;
     float radius;
+    float diffuseColor[3];
+    float specularColor[3];
 };
 
 struct RectanglePlane
@@ -31,11 +31,13 @@ struct RectanglePlane
     Vec3 points[4];
 };
 
+static Sphere spheres[3];
 
 void glInit();
 void reshape(int width, int height);
 void display();
 void setupMVPMatrices();
+void defineSpheres();
 
 int main(int argc, char* argv[])
 {
@@ -91,4 +93,9 @@ void display()
     glutSwapBuffers();
 
     glutPostRedisplay();
+}
+
+void defineSpheres()
+{
+
 }
