@@ -8,22 +8,19 @@
 #include "utilities.h"
 #include <stdio.h>
 
-void glInit();
-void reshape(int width, int height);
-void display();
-void setupMVPMatrices();
-void defineSceneObjects();
-void traceRay(float* pixel, int i, int j);
-void calculateCameraCoordinateSystem();
-void viewportToWindow(int i, int j, float* result);
-int sphereIntersection(float eye[], float dir[], Sphere sphere);
-
 static Sphere spheres[3];
 static Background bg;
 static Camera cam;
 
+static int ScreenWidth;
+static int ScreenHeight;
+
 int main(int argc, char* argv[])
 {
+
+    ScreenWidth = WIDTH;
+    ScreenHeight = HEIGHT;
+
     glutInit(&argc, argv);
     glInit();
 
@@ -43,14 +40,16 @@ void glInit()
     glutCreateWindow("Ray Tracer");
 
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-    
+
     glutReshapeFunc(reshape);
     glutDisplayFunc(display);
 }
 
 void reshape(int width, int height)
 {
-    glViewport(0, 0, width, height);
+    ScreenWidth = width;
+    ScreenHeight = height;
+    glViewport(0, 0, ScreenWidth, ScreenHeight);
     setupMVPMatrices();
 }
 
@@ -58,7 +57,7 @@ void setupMVPMatrices()
 {
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    glOrtho(0, WIDTH, 0, HEIGHT, -1, 1);
+    glOrtho(0, ScreenWidth, 0, ScreenHeight, -1, 1);
 
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
@@ -74,9 +73,9 @@ void display()
 
     float pixel[3];
 
-    for (int j = 0; j < HEIGHT; j++)
+    for (int j = 0; j < ScreenHeight; j++)
     {
-	for (int i = 0; i < WIDTH; i++)
+	for (int i = 0; i < ScreenWidth; i++)
 	{
 	    traceRay(pixel, i, j);
 	    glColor3fv(pixel);
@@ -213,10 +212,14 @@ void viewportToWindow(int i, int j, float* result)
 {
     
     // Calculate u
-    result[0] = i + (-WIDTH/2.0);
+    //result[0] = i + (-WIDTH/2.0);
+
+    result[0] = (1.0)*(i)*(WIDTH)/(ScreenWidth) + (-WIDTH/2.0);
 
     // Calculate v
-    result[1] = j + (-WIDTH/2.0);
+    //result[1] = j + (-WIDTH/2.0);
+   
+    result[1] = (1.0)*(j)*(HEIGHT)/(ScreenHeight) + (-HEIGHT/2.0);
 
     // Calculate w
     result[2] = cam.eye[2];
