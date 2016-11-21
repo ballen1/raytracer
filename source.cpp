@@ -89,8 +89,6 @@ void glInit()
 
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     
-    glDisable(GL_DEPTH_TEST);
-
     glutReshapeFunc(reshape);
     glutDisplayFunc(display);
 }
@@ -113,21 +111,21 @@ void setupMVPMatrices()
 
 void display()
 {
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT);
     
     glPushMatrix();
-    
+
     glBegin(GL_POINTS);
 
-    float pixel[3];
+    float pixel[3] = {1.0, 0.5, 0.5};
 
     for (int j = 0; j < HEIGHT; j++)
     {
 	for (int i = 0; i < WIDTH; i++)
 	{
-	    traceRay(pixel, i, j);
+	    //traceRay(pixel, i, j);
 	    glColor3fv(pixel);
-	    glVertex3i(i, j, 0);
+	    glVertex2i(i, j);
 	}
     }
     
@@ -166,7 +164,7 @@ void traceRay(float* pixel, int i, int j) {
 	    break;
 	}
     }
-
+    
     if (!sphereHit)
     {
 	pixel[0] = bg.backgroundColor[0];
@@ -180,7 +178,7 @@ void defineSceneObjects()
     // Define the camera
     cam.eye[0] = 300.0f;
     cam.eye[1] = 300.0f;
-    cam.eye[2] = -1.0f;
+    cam.eye[2] = -1000.0f;
     
     cam.lookAt[0] = 300.0f;
     cam.lookAt[1] = 300.0f;
