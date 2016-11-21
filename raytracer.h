@@ -60,6 +60,6 @@ void calculateCameraCoordinateSystem();
 
 void viewportToWindow(int i, int j, float* result);
 
-int sphereIntersection(float eye[], float dir[], Sphere sphere);
+int sphereIntersection(float eye[], float dir[], Sphere sphere, float* hitPoint);
 
 #endif

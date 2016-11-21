@@ -73,9 +73,9 @@ void display()
 
     float pixel[3];
 
-    for (int j = 0; j < ScreenHeight; j++)
+    for (int j = 0; j <= ScreenHeight; j++)
     {
-	for (int i = 0; i < ScreenWidth; i++)
+	for (int i = 0; i <= ScreenWidth; i++)
 	{
 	    traceRay(pixel, i, j);
 	    glColor3fv(pixel);
@@ -94,21 +94,24 @@ void display()
 
 void traceRay(float* pixel, int i, int j) {
 
+    float v2w[3];
+
+    viewportToWindow(i, j, v2w);
+
     float dir[3];
 
-    viewportToWindow(i, j, dir);
+    dir[0] = (v2w[0]*cam.u[0]) + (v2w[1]*cam.v[0]) - (v2w[2]*cam.w[0]);
+    dir[1] = (v2w[0]*cam.u[1]) + (v2w[1]*cam.v[1]) - (v2w[2]*cam.w[1]);
+    dir[2] = (v2w[0]*cam.u[2]) + (v2w[1]*cam.v[2]) - (v2w[2]*cam.w[2]);
 
-    float vecDir[3];
-    vecDir[0] = (dir[0]*cam.u[0]) + (dir[1]*cam.v[0]) - (dir[2]*cam.w[0]);
-    vecDir[1] = (dir[0]*cam.u[1]) + (dir[1]*cam.v[1]) - (dir[2]*cam.w[1]);
-    vecDir[2] = (dir[0]*cam.u[2]) + (dir[1]*cam.v[2]) - (dir[2]*cam.w[2]);
-    normalize(vecDir, 3);
+    normalize(dir, 3);
 
-    float sphereHit = 0;
-    
+    int sphereHit = 0;
+    float t_hitPoint;
+
     for (int k = 0; k < 3; k++)
     {
-	if(sphereIntersection(cam.eye, vecDir, spheres[k]))
+	if(sphereIntersection(cam.eye, dir, spheres[k], &t_hitPoint))
 	{
 	    sphereHit = 1;
 	    pixel[0] = spheres[k].diffuseColor[0];
@@ -124,6 +127,72 @@ void traceRay(float* pixel, int i, int j) {
 	pixel[1] = bg.backgroundColor[1];
 	pixel[2] = bg.backgroundColor[2];
     }
+}
+
+void calculateCameraCoordinateSystem()
+{
+    
+    cam.w[0] = -(cam.lookAt[0] - cam.eye[0]);
+    cam.w[1] = -(cam.lookAt[1] - cam.eye[1]);
+    cam.w[2] = -(cam.lookAt[2] - cam.eye[2]);
+
+    normalize(cam.w, 3);
+
+    crossProduct(cam.up, cam.w, cam.u);
+    normalize(cam.u, 3);
+
+    crossProduct(cam.w, cam.u, cam.v);
+    normalize(cam.v, 3);
+
+}
+
+void viewportToWindow(int i, int j, float* result)
+{
+    
+    // Calculate u
+    result[0] = (1.0)*(i)*(WIDTH)/(ScreenWidth) + (-WIDTH/2.0);
+
+    // Calculate v
+   
+    result[1] = (1.0)*(j)*(HEIGHT)/(ScreenHeight) + (-HEIGHT/2.0);
+
+    // Calculate w
+    result[2] = cam.eye[2];
+
+}
+
+int sphereIntersection(float eye[], float dir[], Sphere sphere, float* hitPoint)
+{
+    float a, b, c;
+
+    a = dotProduct(dir, dir);
+
+    float rayOrigin[3];
+
+    rayOrigin[0] = cam.eye[0];
+    rayOrigin[1] = cam.eye[1];
+    rayOrigin[2] = cam.eye[2];
+
+    rayOrigin[0] -= sphere.center.x;
+    rayOrigin[1] -= sphere.center.y;
+    rayOrigin[2] -= sphere.center.z;
+
+    b = 2*dotProduct(rayOrigin, dir);
+
+    c = magnitude(rayOrigin, 3)*magnitude(rayOrigin, 3) - (sphere.radius*sphere.radius);
+
+    float disct = b*b - 4*a*c;
+
+    if (disct >= 0)
+    {
+	// TODO: calculate t to find exact point of intersection
+	return (1);
+    }
+    else
+    {
+	return (0);
+    }
+
 }
 
 void defineSceneObjects()
@@ -188,69 +257,5 @@ void defineSceneObjects()
     //spheres[2].specularColor[0] = ;
     //spheres[2].specularColor[1] = ;
     //spheres[2].specularColor[2] = ;
-
-}
-
-void calculateCameraCoordinateSystem()
-{
-    
-    cam.w[0] = -(cam.lookAt[0] - cam.eye[0]);
-    cam.w[1] = -(cam.lookAt[1] - cam.eye[1]);
-    cam.w[2] = -(cam.lookAt[2] - cam.eye[2]);
-
-    normalize(cam.w, 3);
-
-    crossProduct(cam.up, cam.w, cam.u);
-    normalize(cam.u, 3);
-
-    crossProduct(cam.w, cam.u, cam.v);
-    normalize(cam.v, 3);
-
-}
-
-void viewportToWindow(int i, int j, float* result)
-{
-    
-    // Calculate u
-    //result[0] = i + (-WIDTH/2.0);
-
-    result[0] = (1.0)*(i)*(WIDTH)/(ScreenWidth) + (-WIDTH/2.0);
-
-    // Calculate v
-    //result[1] = j + (-WIDTH/2.0);
-   
-    result[1] = (1.0)*(j)*(HEIGHT)/(ScreenHeight) + (-HEIGHT/2.0);
-
-    // Calculate w
-    result[2] = cam.eye[2];
-
-}
-
-int sphereIntersection(float eye[], float dir[], Sphere sphere)
-{
-    float a, b, c;
-
-    a = dotProduct(dir, dir);
-
-    float rayStart[3];
-    rayStart[0] = cam.eye[0] - sphere.center.x;
-    rayStart[1] = cam.eye[1] - sphere.center.y;
-    rayStart[2] = cam.eye[2] - sphere.center.z;
-
-    b = 2*dotProduct(rayStart, dir);
-
-    c = magnitude(rayStart, 3)*magnitude(rayStart, 3) - (sphere.radius*sphere.radius);
-
-    float disct = b*b - 4*a*c;
-
-    if (disct >= 0)
-    {
-	// TODO: calculate t to find exact point of intersection
-	return (1);
-    }
-    else
-    {
-	return (0);
-    }
 
 }
