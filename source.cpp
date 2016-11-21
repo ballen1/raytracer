@@ -151,10 +151,8 @@ void traceRay(float* pixel, int i, int j) {
     normalize(vecDir, 3);
 
     float sphereHit = 0;
-
-    //TODO: Set back to 3
     
-    for (int k = 0; k < 1; k++)
+    for (int k = 0; k < 3; k++)
     {
 	if(sphereIntersection(cam.eye, vecDir, spheres[k]))
 	{
@@ -177,9 +175,9 @@ void traceRay(float* pixel, int i, int j) {
 void defineSceneObjects()
 {
     // Define the camera
-    cam.eye[0] = 0.0f;
-    cam.eye[1] = 0.0f;
-    cam.eye[2] = -1000.0f;
+    cam.eye[0] = 300.0f;
+    cam.eye[1] = 300.0f;
+    cam.eye[2] = 1000.0f;
     
     cam.lookAt[0] = 300.0f;
     cam.lookAt[1] = 300.0f;
@@ -204,10 +202,10 @@ void defineSceneObjects()
 
     // Define the spheres
 
-    spheres[0].center.x = 0.0f;
-    spheres[0].center.y = 0.0f;
+    spheres[0].center.x = 300.0f;
+    spheres[0].center.y = 300.0f;
     spheres[0].center.z = 0.0f;
-    spheres[0].radius = 1.0f;
+    spheres[0].radius = 50.0f;
     spheres[0].diffuseColor[0] = 1.0f;
     spheres[0].diffuseColor[1] = 0.0f;
     spheres[0].diffuseColor[2] = 0.0f;
@@ -215,10 +213,10 @@ void defineSceneObjects()
     //spheres[0].specularColor[1] = ;
     //spheres[0].specularColor[2] = ;
 
-    spheres[1].center.x = -10.0f;
-    spheres[1].center.y = 10.0f;
+    spheres[1].center.x = 100.0f;
+    spheres[1].center.y = 100.0f;
     spheres[1].center.z = -10.0f;
-    spheres[1].radius = 5.0f;
+    spheres[1].radius = 25.0f;
     spheres[1].diffuseColor[0] = 0.0f;
     spheres[1].diffuseColor[1] = 1.0f;
     spheres[1].diffuseColor[2] = 0.0f;
@@ -226,10 +224,10 @@ void defineSceneObjects()
     //spheres[1].specularColor[1] = ;
     //spheres[1].specularColor[2] = ;
 
-    spheres[2].center.x = 0.0f;
-    spheres[2].center.y = 5.0f;
+    spheres[2].center.x = 450.0f;
+    spheres[2].center.y = 450.0f;
     spheres[2].center.z = 20.0f;
-    spheres[2].radius = 5.0f;
+    spheres[2].radius = 75.0f;
     spheres[2].diffuseColor[0] = 0.0f;
     spheres[2].diffuseColor[1] = 0.0f;
     spheres[2].diffuseColor[2] = 1.0f;
@@ -260,20 +258,13 @@ void normalize(float* vec, int size)
 {
 
     // TODO: Switch this to magnitude function
-    float magnitude_sqrt = 0.0f;
-    
-    for (int i = 0; i < size; i++)
-    {
-	magnitude_sqrt += vec[i]*vec[i];
-    }
+    float mag = magnitude(vec, 3);
 
-    magnitude_sqrt = sqrt(magnitude_sqrt);
-
-    if (magnitude_sqrt != 0)
+    if (mag != 0)
     {
 	for (int i = 0; i < size; i++)
 	{
-	    vec[i] /= magnitude_sqrt;
+	    vec[i] /= mag;
 	}
     }
 }
@@ -306,10 +297,10 @@ void viewportToWindow(int i, int j, float* result)
 {
     
     // Calculate u
-    result[0] = i + 0.5;
+    result[0] = i + (-WIDTH/2.0);
 
     // Calculate v
-    result[1] = j + 0.5;
+    result[1] = j + (-WIDTH/2.0);
 
     // Calculate w
     result[2] = cam.eye[2];
@@ -320,13 +311,20 @@ int sphereIntersection(float eye[], float dir[], Sphere sphere)
 {
     float a, b, c;
 
-    a = magnitude(eye, 3)*magnitude(eye,3);
-    b = dotProduct(eye, dir);
-    c = magnitude(dir, 3)*magnitude(dir, 3) - 1;
+    a = dotProduct(dir, dir);
 
-    float disct = b*b - a*c;
+    float rayStart[3];
+    rayStart[0] = cam.eye[0] - sphere.center.x;
+    rayStart[1] = cam.eye[1] - sphere.center.y;
+    rayStart[2] = cam.eye[2] - sphere.center.z;
 
-    if (disct > 0)
+    b = 2*dotProduct(rayStart, dir);
+
+    c = magnitude(rayStart, 3)*magnitude(rayStart, 3) - (sphere.radius*sphere.radius);
+
+    float disct = b*b - 4*a*c;
+
+    if (disct >= 0)
     {
 	// TODO: calculate t to find exact point of intersection
 	return (1);
