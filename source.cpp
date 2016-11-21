@@ -113,7 +113,7 @@ void setupMVPMatrices()
 
 void display()
 {
-    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
     glPushMatrix();
     
@@ -121,13 +121,13 @@ void display()
 
     float pixel[3];
 
-    for (int i = 0; i < HEIGHT; i++)
+    for (int j = 0; j < HEIGHT; j++)
     {
-	for (int j = 0; j < WIDTH; j++)
+	for (int i = 0; i < WIDTH; i++)
 	{
 	    traceRay(pixel, i, j);
 	    glColor3fv(pixel);
-	    glVertex3f(i, j , 0);
+	    glVertex3i(i, j, 0);
 	}
     }
     
@@ -146,11 +146,18 @@ void traceRay(float* pixel, int i, int j) {
 
     viewportToWindow(i, j, dir);
 
+    float vecDir[3];
+    vecDir[0] = (dir[0]*cam.u[0]) + (dir[1]*cam.v[0]) - (dir[2]*cam.w[0]);
+    vecDir[1] = (dir[0]*cam.u[1]) + (dir[1]*cam.v[1]) - (dir[2]*cam.w[1]);
+    vecDir[2] = (dir[0]*cam.u[2]) + (dir[1]*cam.v[2]) - (dir[2]*cam.w[2]);
+
     float sphereHit = 0;
 
-    for (int k = 0; k < 3; k++)
+    //TODO: Set back to 3
+    
+    for (int k = 0; k < 1; k++)
     {
-	if(sphereIntersection(cam.eye, dir, spheres[k]))
+	if(sphereIntersection(cam.eye, vecDir, spheres[k]))
 	{
 	    sphereHit = 1;
 	    pixel[0] = spheres[k].diffuseColor[0];
@@ -171,12 +178,12 @@ void traceRay(float* pixel, int i, int j) {
 void defineSceneObjects()
 {
     // Define the camera
-    cam.eye[0] = 0.0f;
-    cam.eye[1] = 10.0f;
-    cam.eye[2] = -5.0f;
+    cam.eye[0] = 300.0f;
+    cam.eye[1] = 300.0f;
+    cam.eye[2] = -1.0f;
     
     cam.lookAt[0] = 0.0f;
-    cam.lookAt[1] = 0.0f;
+    cam.lookAt[1] = 300.0f;
     cam.lookAt[2] = 0.0f;
 
     cam.up[0] = 0.0f;
@@ -187,9 +194,9 @@ void defineSceneObjects()
     calculateCameraCoordinateSystem();
     
     // Define overall background properties
-    bg.backgroundColor[0] = 0.0f;
-    bg.backgroundColor[1] = 0.0f;
-    bg.backgroundColor[2] = 0.0f;
+    bg.backgroundColor[0] = 0.5f;
+    bg.backgroundColor[1] = 0.5f;
+    bg.backgroundColor[2] = 0.5f;
     bg.backgroundColor[3] = 1.0f;
 
     bg.ambientColor[0] = 1.0f;
@@ -198,10 +205,10 @@ void defineSceneObjects()
 
     // Define the spheres
 
-    spheres[0].center.x = 10.0f;
-    spheres[0].center.y = 10.0f;
-    spheres[0].center.z = 10.0f;
-    spheres[0].radius = 5.0f;
+    spheres[0].center.x = 0.0f;
+    spheres[0].center.y = 0.0f;
+    spheres[0].center.z = 0.0f;
+    spheres[0].radius = 1.0f;
     spheres[0].diffuseColor[0] = 1.0f;
     spheres[0].diffuseColor[1] = 0.0f;
     spheres[0].diffuseColor[2] = 0.0f;
@@ -306,7 +313,7 @@ void viewportToWindow(int i, int j, float* result)
     result[1] = j;
 
     // Calculate w
-    result[2] = -cam.eye[2];
+    result[2] = cam.eye[2];
 
 }
 
@@ -316,7 +323,7 @@ int sphereIntersection(float eye[], float dir[], Sphere sphere)
 
     a = magnitude(eye, 3)*magnitude(eye,3);
     b = dotProduct(eye, dir);
-    c = magnitude(dir, 3)*magnitude(dir, 3);
+    c = magnitude(dir, 3)*magnitude(dir, 3) - 1;
 
     float disct = b*b - a*c;
 
