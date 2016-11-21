@@ -117,13 +117,13 @@ void display()
 
     glBegin(GL_POINTS);
 
-    float pixel[3] = {1.0, 0.5, 0.5};
+    float pixel[3];
 
     for (int j = 0; j < HEIGHT; j++)
     {
 	for (int i = 0; i < WIDTH; i++)
 	{
-	    //traceRay(pixel, i, j);
+	    traceRay(pixel, i, j);
 	    glColor3fv(pixel);
 	    glVertex2i(i, j);
 	}
@@ -148,6 +148,7 @@ void traceRay(float* pixel, int i, int j) {
     vecDir[0] = (dir[0]*cam.u[0]) + (dir[1]*cam.v[0]) - (dir[2]*cam.w[0]);
     vecDir[1] = (dir[0]*cam.u[1]) + (dir[1]*cam.v[1]) - (dir[2]*cam.w[1]);
     vecDir[2] = (dir[0]*cam.u[2]) + (dir[1]*cam.v[2]) - (dir[2]*cam.w[2]);
+    normalize(vecDir, 3);
 
     float sphereHit = 0;
 
@@ -176,8 +177,8 @@ void traceRay(float* pixel, int i, int j) {
 void defineSceneObjects()
 {
     // Define the camera
-    cam.eye[0] = 300.0f;
-    cam.eye[1] = 300.0f;
+    cam.eye[0] = 0.0f;
+    cam.eye[1] = 0.0f;
     cam.eye[2] = -1000.0f;
     
     cam.lookAt[0] = 300.0f;
@@ -305,10 +306,10 @@ void viewportToWindow(int i, int j, float* result)
 {
     
     // Calculate u
-    result[0] = i;
+    result[0] = i + 0.5;
 
     // Calculate v
-    result[1] = j;
+    result[1] = j + 0.5;
 
     // Calculate w
     result[2] = cam.eye[2];
