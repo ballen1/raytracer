@@ -182,7 +182,7 @@ void defineSceneObjects()
     cam.eye[1] = 300.0f;
     cam.eye[2] = -1.0f;
     
-    cam.lookAt[0] = 0.0f;
+    cam.lookAt[0] = 300.0f;
     cam.lookAt[1] = 300.0f;
     cam.lookAt[2] = 0.0f;
 
