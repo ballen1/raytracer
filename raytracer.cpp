@@ -35,12 +35,12 @@ int main(int argc, char* argv[])
 void glInit()
 {
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
-    glutInitWindowSize(WIDTH, HEIGHT);
+    glutInitWindowSize(ScreenWidth, ScreenHeight);
     glutInitWindowPosition(WINDOW_STARTX, WINDOW_STARTY);
 
     glutCreateWindow("Ray Tracer");
 
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
 
     glutReshapeFunc(reshape);
     glutDisplayFunc(display);
@@ -74,16 +74,17 @@ void display()
 
     float pixel[3];
 
-    for (int j = 0; j <= ScreenHeight; j++)
-    {
-	for (int i = 0; i <= ScreenWidth; i++)
+
+    for (int j = 0; j < ScreenHeight; j++)
+    {   
+	for (int i = 0; i < ScreenWidth; i++)
 	{
 	    traceRay(pixel, i, j);
 	    glColor3fv(pixel);
-	    glVertex2i(i, j);
+	    glVertex3f(i+0.5, j+0.5, 0);
 	}
     }
-    
+
     glEnd();
 
     glPopMatrix();

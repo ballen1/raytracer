@@ -1,7 +1,7 @@
 #ifndef RAYTRACER_H
 #define RAYTRACER_H
 
-#define WIDTH 600
+#define WIDTH 800
 #define HEIGHT 600
 #define WINDOW_STARTX 100
 #define WINDOW_STARTY 100
