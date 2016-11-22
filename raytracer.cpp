@@ -132,16 +132,25 @@ void traceRay(float* pixel, int i, int j) {
 
     if (sphereHit != -1)
     {
+
 	pixel[0] = 0.0f;
 	pixel[1] = 0.0f;
 	pixel[2] = 0.0f;
+
 	float intersectPoint[3] = {0.0, 0.0, 0.0};
 	    
 	scalarMultiply(t_hitPoint, dir, 3);
+
 	vAdd(dir, cam.eye, 3, intersectPoint);
 
-	float normal[3] = {0.0, 0.0, 0.0};
-	float center[3] = {spheres[sphereHit].center.x, spheres[sphereHit].center.y, spheres[sphereHit].center.z};
+	float normal[3];
+	float LightDir[3];
+
+	scalarMultiplyCopy(-1.0, Light0.dir, 3, LightDir);
+
+	float center[3] = {spheres[sphereHit].center.x,
+			   spheres[sphereHit].center.y,
+			   spheres[sphereHit].center.z};
 
 	vSubtract(intersectPoint, center, 3, normal);
 	normalize(normal, 3);
@@ -157,7 +166,7 @@ void traceRay(float* pixel, int i, int j) {
 
 	// Diffuse Lighting
 
-	float NL = dotProduct(Light0.dir, normal);
+	float NL = dotProduct(LightDir, normal);
 
 	float diffuseLighting[3];
 	    
@@ -169,23 +178,26 @@ void traceRay(float* pixel, int i, int j) {
 
 	vAdd(pixel, diffuseLighting, 3, pixel);
 
-/*
+
 	// Specular Lighting
 	float V[3] = {0.0, 0.0, 0.0};
 
-	float scale = -2*dotProduct(normal, Light0.dir);
+	float scale = -2*dotProduct(normal, LightDir);
 	scalarMultiplyCopy(scale, normal, 3, V);
        
 	float R[3];
-	vAdd(Light0.dir, V, 3, R);
+	vAdd(LightDir, V, 3, R);
 
 	float specularLightingMultiplier = (spheres[sphereHit].k_specular) * pow(dotProduct(R, V), spheres[sphereHit].specParam);
+
 	float specularLighting[3];
 
-	scalarMultiplyCopy(specularLightingMultiplier, spheres[sphereHit].specularColor, 3, specularLighting);
+	scalarMultiplyCopy(specularLightingMultiplier, spheres[sphereHit].materialColor, 3, specularLighting);
+
+	vec3Mult(specularLighting, Light0.color, specularLighting);
 	
 	vAdd(pixel, specularLighting, 3, pixel);
-*/
+
 
     }
 
@@ -369,16 +381,16 @@ void defineSceneObjects()
 
     spheres[2].k_ambient = 0.2f;
     spheres[2].k_diffuse = 0.7f;
-    spheres[2].k_specular = 0.01f;
+    spheres[2].k_specular = 1.0f;
     spheres[2].specParam = 5;
 
     Light0.color[0] = 1.0f;
     Light0.color[1] = 1.0f;
     Light0.color[2] = 1.0f;
 
-    Light0.dir[0] = -150.0;
+    Light0.dir[0] = 150.0;
     Light0.dir[1] = 0.0;
-    Light0.dir[2] = 250.0;
+    Light0.dir[2] = -250.0;
     
     normalize(Light0.dir, 3);
 

@@ -39,11 +39,11 @@ inline float dotProduct(float a[], float b[]) {
     return (a[0]*b[0] + a[1]*b[1] + a[2]*b[2]);
 }
 
-inline void vSubtract(float v1[], float v2[], int size, float* result)
+inline void vSubtract(float v2[], float v1[], int size, float* result)
 {
     for (int i = 0; i < size; i++)
     {
-	result[i] = v1[i] - v2[i];
+	result[i] = v2[i] - v1[i];
     }
 }
 
