@@ -180,24 +180,35 @@ void traceRay(float* pixel, int i, int j) {
 
 
 	// Specular Lighting
-	float V[3] = {0.0, 0.0, 0.0};
+	float V[3];
 
-	float scale = -2*dotProduct(normal, LightDir);
-	scalarMultiplyCopy(scale, normal, 3, V);
-       
+	V[0] = (cam.eye[0] - intersectPoint[0]);
+	V[1] = (cam.eye[1] - intersectPoint[1]);
+	V[2] = (cam.eye[2] - intersectPoint[2]);
+
+	normalize(V, 3);
+
+	float intermediate[3];
+	float dot;
+
+	dot = dotProduct(normal, LightDir)*2.0;
+	scalarMultiplyCopy(dot, normal, 3, intermediate);
+
 	float R[3];
-	vAdd(LightDir, V, 3, R);
 
-	float specularLightingMultiplier = (spheres[sphereHit].k_specular) * pow(dotProduct(R, V), spheres[sphereHit].specParam);
+	vAdd(intermediate, Light0.dir, 3, R);
 
-	float specularLighting[3];
+	float VR = dotProduct(R, V);
 
-	scalarMultiplyCopy(specularLightingMultiplier, spheres[sphereHit].materialColor, 3, specularLighting);
+	if (VR >= 0)
+	{
+	    float specularMultiplier = pow(VR, spheres[sphereHit].specParam) * spheres[sphereHit].k_specular;
 
-	vec3Mult(specularLighting, Light0.color, specularLighting);
-	
-	vAdd(pixel, specularLighting, 3, pixel);
+	    float specularLighting[3];
+	    scalarMultiplyCopy(specularMultiplier, Light0.color, 3, specularLighting);
 
+	    vAdd(pixel, specularLighting, 3, pixel);
+	}	    
 
     }
 
@@ -355,8 +366,8 @@ void defineSceneObjects()
 
     spheres[0].k_ambient = 0.2f;
     spheres[0].k_diffuse = 0.7f;
-    spheres[0].k_specular = 0.03f;
-    spheres[0].specParam = 5;
+    spheres[0].k_specular = 0.9f;
+    spheres[0].specParam = 10;
 
     spheres[1].center.x = 250.0f;
     spheres[1].center.y = 50.0f;
@@ -368,8 +379,8 @@ void defineSceneObjects()
 
     spheres[1].k_ambient = 0.2f;
     spheres[1].k_diffuse = 0.7f;
-    spheres[1].k_specular = 0.03f;
-    spheres[1].specParam = 5;
+    spheres[1].k_specular = 0.9f;
+    spheres[1].specParam = 2;
 
     spheres[2].center.x = 450.0f;
     spheres[2].center.y = 80.0f;
@@ -381,8 +392,8 @@ void defineSceneObjects()
 
     spheres[2].k_ambient = 0.2f;
     spheres[2].k_diffuse = 0.7f;
-    spheres[2].k_specular = 1.0f;
-    spheres[2].specParam = 5;
+    spheres[2].k_specular = 0.8f;
+    spheres[2].specParam = 20;
 
     Light0.color[0] = 1.0f;
     Light0.color[1] = 1.0f;
