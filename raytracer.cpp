@@ -10,6 +10,7 @@
 
 static Sphere spheres[3];
 static Background bg;
+static Plane plane;
 static Camera cam;
 static Light Light0;
 
@@ -108,47 +109,89 @@ void traceRay(float* pixel, int i, int j) {
 
     normalize(dir, 3);
 
-    int sphereHit = 0;
-    float t_hitPoint;
+    int sphereHit = -1;
+
+    float t_hitPoint, t_currentHitPoint;
+    
+    t_hitPoint = 0;
 
     for (int k = 0; k < 3; k++)
     {
-	if(sphereIntersection(cam.eye, dir, spheres[k], &t_hitPoint))
+	if(sphereIntersection(cam.eye, dir, spheres[k], &t_currentHitPoint))
 	{
-	    sphereHit = 1;
 
-	    float intersectPoint[3] = {0.0, 0.0, 0.0};
-	    
-	    scalarMultiply(t_hitPoint, dir, 3);
-	    vAdd(dir, cam.eye, 3, intersectPoint);
+	    if (t_hitPoint <= 0 || t_currentHitPoint <= t_hitPoint)
+	    {
+		t_hitPoint = t_currentHitPoint;
+		sphereHit = k;
+	    }
 
-	    float normal[3] = {0.0, 0.0, 0.0};
-	    float center[3] = {spheres[k].center.x, spheres[k].center.y, spheres[k].center.z};
-
-	    vSubtract(intersectPoint, center, 3, intersectPoint);
-	    normalize(intersectPoint, 3);
-
-	    // Ambient Lighting
-
-	    scalarMultiplyCopy(1 - spheres[k].k_ambient, bg.ambientColor, 3, pixel);
-
-	    // Diffuse Lighting
-
-	    float NL = dotProduct(Light0.dir, intersectPoint);
-
-	    float diffuseLighting[3];
-	    
-	    scalarMultiplyCopy(1 - spheres[k].k_diffuse, spheres[k].diffuseColor, 3, diffuseLighting);
-	    
-	    scalarMultiply(NL, diffuseLighting, 3);
-
-	    vAdd(pixel, diffuseLighting, 3, pixel);
-
-	    break;
 	}
     }
+
+
+    if (sphereHit != -1)
+    {
+	float intersectPoint[3] = {0.0, 0.0, 0.0};
+	    
+	scalarMultiply(t_hitPoint, dir, 3);
+	vAdd(dir, cam.eye, 3, intersectPoint);
+
+	float normal[3] = {0.0, 0.0, 0.0};
+	float center[3] = {spheres[sphereHit].center.x, spheres[sphereHit].center.y, spheres[sphereHit].center.z};
+
+	vSubtract(intersectPoint, center, 3, normal);
+	normalize(normal, 3);
+
+	// Ambient Lighting
+
+	scalarMultiplyCopy(spheres[sphereHit].k_ambient, bg.ambientColor, 3, pixel);
+
+	// Diffuse Lighting
+
+	float NL = dotProduct(Light0.dir, normal);
+
+	float diffuseLighting[3];
+	    
+	scalarMultiplyCopy(spheres[sphereHit].k_diffuse, spheres[sphereHit].diffuseColor, 3, diffuseLighting);
+	    
+	scalarMultiply(NL, diffuseLighting, 3);
+
+	vAdd(pixel, diffuseLighting, 3, pixel);
+
+
+	// Specular Lighting
+	float V[3] = {0.0, 0.0, 0.0};
+	float negativeNormal[3] = {-normal[0], -normal[1], -normal[2]};
+
+	float scale = 2*dotProduct(negativeNormal, Light0.dir);
+	scalarMultiplyCopy(scale, normal, 3, V);
+       
+	float R[3];
+	vAdd(Light0.dir, V, 3, R);
+
+	float specularLightingMultiplier = (spheres[sphereHit].k_specular) * pow(dotProduct(R, V), spheres[sphereHit].specParam);
+	float specularLighting[3];
+
+	scalarMultiplyCopy(specularLightingMultiplier, spheres[sphereHit].specularColor, 3, specularLighting);
+	
+	vAdd(pixel, specularLighting, 3, pixel);
+
+
+    }
+
+    int planeHit = 0;
+
+    if (sphereHit == -1)
+    {
+	planeHit = planeIntersection(cam.eye, dir, plane, &t_hitPoint);
+	
+	pixel[0] = plane.color[0];
+	pixel[1] = plane.color[1];
+	pixel[2] = plane.color[2];
+    }
     
-    if (!sphereHit)
+    if (sphereHit == -1  && !planeHit)
     {
 	pixel[0] = bg.backgroundColor[0];
 	pixel[1] = bg.backgroundColor[1];
@@ -211,8 +254,7 @@ int sphereIntersection(float eye[], float dir[], Sphere sphere, float* hitPoint)
     float disct = b*b - 4*a*c;
 
     if (disct >= 0)
-    {
-	
+    {	
 	float delta = sqrt(disct);
 
 	float t1, t2;
@@ -231,15 +273,29 @@ int sphereIntersection(float eye[], float dir[], Sphere sphere, float* hitPoint)
 
 }
 
+int planeIntersection(float eye[], float dir[], Plane plane, float* hitPoint)
+{
+    if (dir[1] >= 0.0)
+    {
+	return (0);
+    }
+
+    else
+    {
+	*hitPoint = -(eye[1]/dir[1]);
+    }
+
+}
+
 void defineSceneObjects()
 {
     // Define the camera
     cam.eye[0] = 300.0f;
-    cam.eye[1] = 300.0f;
-    cam.eye[2] = 1000.0f;
+    cam.eye[1] = 25.0f;
+    cam.eye[2] = 500.0f;
     
     cam.lookAt[0] = 300.0f;
-    cam.lookAt[1] = 300.0f;
+    cam.lookAt[1] = 50.0f;
     cam.lookAt[2] = 0.0f;
 
     cam.up[0] = 0.0f;
@@ -259,49 +315,62 @@ void defineSceneObjects()
     bg.ambientColor[1] = 1.0f;
     bg.ambientColor[2] = 1.0f;
 
+    // Define the plane
+    plane.y = 0.0f;
+    
+    plane.color[0] = 0.5f;
+    plane.color[1] = 0.5f;
+    plane.color[2] = 0.5f;
+
     // Define the spheres
 
-    spheres[0].center.x = 300.0f;
-    spheres[0].center.y = 300.0f;
+    spheres[0].center.x = 100.0f;
+    spheres[0].center.y = 100.0f;
     spheres[0].center.z = 0.0f;
-    spheres[0].radius = 50.0f;
+    spheres[0].radius = 100.0f;
     spheres[0].diffuseColor[0] = 1.0f;
     spheres[0].diffuseColor[1] = 0.0f;
     spheres[0].diffuseColor[2] = 0.0f;
-    //spheres[0].specularColor[0] = ;
-    //spheres[0].specularColor[1] = ;
-    //spheres[0].specularColor[2] = ;
+    spheres[0].specularColor[0] = 1.0;
+    spheres[0].specularColor[1] = 1.0;
+    spheres[0].specularColor[2] = 1.0;
 
-    spheres[0].k_ambient = 0.95f;
-    spheres[0].k_diffuse = 0.0f;
+    spheres[0].k_ambient = 0.10f;
+    spheres[0].k_diffuse = 1.0f;
+    spheres[0].k_specular = 0.03f;
+    spheres[0].specParam = 5;
 
-    spheres[1].center.x = 100.0f;
-    spheres[1].center.y = 100.0f;
-    spheres[1].center.z = -10.0f;
-    spheres[1].radius = 25.0f;
+    spheres[1].center.x = 250.0f;
+    spheres[1].center.y = 50.0f;
+    spheres[1].center.z = 100.0f;
+    spheres[1].radius = 50.0f;
     spheres[1].diffuseColor[0] = 0.0f;
     spheres[1].diffuseColor[1] = 1.0f;
     spheres[1].diffuseColor[2] = 0.0f;
-    //spheres[1].specularColor[0] = ;
-    //spheres[1].specularColor[1] = ;
-    //spheres[1].specularColor[2] = ;
+    spheres[1].specularColor[0] = 1.0f;
+    spheres[1].specularColor[1] = 1.0f;
+    spheres[1].specularColor[2] = 1.0f;
 
-    spheres[1].k_ambient = 0.95f;
-    spheres[1].k_diffuse = 0.0f;
+    spheres[1].k_ambient = 0.10f;
+    spheres[1].k_diffuse = 1.0f;
+    spheres[1].k_specular = 0.03f;
+    spheres[1].specParam = 5;
 
     spheres[2].center.x = 450.0f;
-    spheres[2].center.y = 450.0f;
+    spheres[2].center.y = 50.0f;
     spheres[2].center.z = 20.0f;
     spheres[2].radius = 75.0f;
     spheres[2].diffuseColor[0] = 0.0f;
     spheres[2].diffuseColor[1] = 0.0f;
     spheres[2].diffuseColor[2] = 1.0f;
-    //spheres[2].specularColor[0] = ;
-    //spheres[2].specularColor[1] = ;
-    //spheres[2].specularColor[2] = ;
+    spheres[2].specularColor[0] = 1.0f;
+    spheres[2].specularColor[1] = 1.0f;
+    spheres[2].specularColor[2] = 1.0f;
 
-    spheres[2].k_ambient = 0.95f;
-    spheres[2].k_diffuse = 0.0f;
+    spheres[2].k_ambient = 0.10f;
+    spheres[2].k_diffuse = 1.0f;
+    spheres[2].k_specular = 0.01f;
+    spheres[2].specParam = 5;
 
     Light0.color[0] = 1.0f;
     Light0.color[1] = 1.0f;

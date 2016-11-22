@@ -23,11 +23,15 @@ struct Sphere
 
     float k_ambient;
     float k_diffuse;
+    float k_specular;
+
+    float specParam;
 };
 
-struct RectanglePlane
+struct Plane
 {
-    Vec3 points[4];
+    float y;
+    float color[3];
 };
 
 struct Background
@@ -70,5 +74,7 @@ void calculateCameraCoordinateSystem();
 void viewportToWindow(int i, int j, float* result);
 
 int sphereIntersection(float eye[], float dir[], Sphere sphere, float* hitPoint);
+
+int planeIntersection(float eye[], float dir[], Plane plane, float* hitPoint);
 
 #endif
