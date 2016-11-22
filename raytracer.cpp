@@ -132,6 +132,9 @@ void traceRay(float* pixel, int i, int j) {
 
     if (sphereHit != -1)
     {
+	pixel[0] = 0.0f;
+	pixel[1] = 0.0f;
+	pixel[2] = 0.0f;
 	float intersectPoint[3] = {0.0, 0.0, 0.0};
 	    
 	scalarMultiply(t_hitPoint, dir, 3);
@@ -144,8 +147,13 @@ void traceRay(float* pixel, int i, int j) {
 	normalize(normal, 3);
 
 	// Ambient Lighting
+	float ambientLighting[3];
+	
+	scalarMultiplyCopy(spheres[sphereHit].k_ambient, bg.ambientColor, 3, ambientLighting);
 
-	scalarMultiplyCopy(spheres[sphereHit].k_ambient, bg.ambientColor, 3, pixel);
+	vec3Mult(ambientLighting, spheres[sphereHit].materialColor, ambientLighting);
+
+	vAdd(pixel, ambientLighting, 3, pixel);
 
 	// Diffuse Lighting
 
@@ -153,18 +161,19 @@ void traceRay(float* pixel, int i, int j) {
 
 	float diffuseLighting[3];
 	    
-	scalarMultiplyCopy(spheres[sphereHit].k_diffuse, spheres[sphereHit].diffuseColor, 3, diffuseLighting);
-	    
+	scalarMultiplyCopy(spheres[sphereHit].k_diffuse, Light0.color, 3, diffuseLighting);
+	
+	vec3Mult(diffuseLighting, spheres[sphereHit].materialColor, diffuseLighting);
+    
 	scalarMultiply(NL, diffuseLighting, 3);
 
 	vAdd(pixel, diffuseLighting, 3, pixel);
 
-
+/*
 	// Specular Lighting
 	float V[3] = {0.0, 0.0, 0.0};
-	float negativeNormal[3] = {-normal[0], -normal[1], -normal[2]};
 
-	float scale = 2*dotProduct(negativeNormal, Light0.dir);
+	float scale = -2*dotProduct(normal, Light0.dir);
 	scalarMultiplyCopy(scale, normal, 3, V);
        
 	float R[3];
@@ -176,7 +185,7 @@ void traceRay(float* pixel, int i, int j) {
 	scalarMultiplyCopy(specularLightingMultiplier, spheres[sphereHit].specularColor, 3, specularLighting);
 	
 	vAdd(pixel, specularLighting, 3, pixel);
-
+*/
 
     }
 
@@ -292,7 +301,7 @@ void defineSceneObjects()
     // Define the camera
     cam.eye[0] = 300.0f;
     cam.eye[1] = 25.0f;
-    cam.eye[2] = 500.0f;
+    cam.eye[2] = 2000.0f;
     
     cam.lookAt[0] = 300.0f;
     cam.lookAt[1] = 50.0f;
@@ -328,15 +337,12 @@ void defineSceneObjects()
     spheres[0].center.y = 100.0f;
     spheres[0].center.z = 0.0f;
     spheres[0].radius = 100.0f;
-    spheres[0].diffuseColor[0] = 1.0f;
-    spheres[0].diffuseColor[1] = 0.0f;
-    spheres[0].diffuseColor[2] = 0.0f;
-    spheres[0].specularColor[0] = 1.0;
-    spheres[0].specularColor[1] = 1.0;
-    spheres[0].specularColor[2] = 1.0;
+    spheres[0].materialColor[0] = 1.0f;
+    spheres[0].materialColor[1] = 0.0f;
+    spheres[0].materialColor[2] = 0.0f;
 
-    spheres[0].k_ambient = 0.10f;
-    spheres[0].k_diffuse = 1.0f;
+    spheres[0].k_ambient = 0.2f;
+    spheres[0].k_diffuse = 0.7f;
     spheres[0].k_specular = 0.03f;
     spheres[0].specParam = 5;
 
@@ -344,31 +350,25 @@ void defineSceneObjects()
     spheres[1].center.y = 50.0f;
     spheres[1].center.z = 100.0f;
     spheres[1].radius = 50.0f;
-    spheres[1].diffuseColor[0] = 0.0f;
-    spheres[1].diffuseColor[1] = 1.0f;
-    spheres[1].diffuseColor[2] = 0.0f;
-    spheres[1].specularColor[0] = 1.0f;
-    spheres[1].specularColor[1] = 1.0f;
-    spheres[1].specularColor[2] = 1.0f;
+    spheres[1].materialColor[0] = 0.0f;
+    spheres[1].materialColor[1] = 1.0f;
+    spheres[1].materialColor[2] = 0.0f;
 
-    spheres[1].k_ambient = 0.10f;
-    spheres[1].k_diffuse = 1.0f;
+    spheres[1].k_ambient = 0.2f;
+    spheres[1].k_diffuse = 0.7f;
     spheres[1].k_specular = 0.03f;
     spheres[1].specParam = 5;
 
     spheres[2].center.x = 450.0f;
-    spheres[2].center.y = 50.0f;
+    spheres[2].center.y = 80.0f;
     spheres[2].center.z = 20.0f;
     spheres[2].radius = 75.0f;
-    spheres[2].diffuseColor[0] = 0.0f;
-    spheres[2].diffuseColor[1] = 0.0f;
-    spheres[2].diffuseColor[2] = 1.0f;
-    spheres[2].specularColor[0] = 1.0f;
-    spheres[2].specularColor[1] = 1.0f;
-    spheres[2].specularColor[2] = 1.0f;
+    spheres[2].materialColor[0] = 0.0f;
+    spheres[2].materialColor[1] = 0.0f;
+    spheres[2].materialColor[2] = 1.0f;
 
-    spheres[2].k_ambient = 0.10f;
-    spheres[2].k_diffuse = 1.0f;
+    spheres[2].k_ambient = 0.2f;
+    spheres[2].k_diffuse = 0.7f;
     spheres[2].k_specular = 0.01f;
     spheres[2].specParam = 5;
 
@@ -377,8 +377,8 @@ void defineSceneObjects()
     Light0.color[2] = 1.0f;
 
     Light0.dir[0] = -150.0;
-    Light0.dir[1] = -150.0;
-    Light0.dir[2] = 300.0;
+    Light0.dir[1] = 0.0;
+    Light0.dir[2] = 250.0;
     
     normalize(Light0.dir, 3);
 

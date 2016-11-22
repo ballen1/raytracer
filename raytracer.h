@@ -18,8 +18,7 @@ struct Sphere
     Vec3 center;
     float radius;
 
-    float diffuseColor[3];
-    float specularColor[3];
+    float materialColor[3];
 
     float k_ambient;
     float k_diffuse;
