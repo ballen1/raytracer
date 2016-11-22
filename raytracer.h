@@ -30,7 +30,10 @@ struct Sphere
 struct Plane
 {
     float y;
-    float color[3];
+    float materialColor[3];
+    
+    float k_ambient;
+    float k_diffuse;
 };
 
 struct Background

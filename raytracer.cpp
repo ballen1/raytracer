@@ -97,6 +97,11 @@ void display()
 
 void traceRay(float* pixel, int i, int j) {
 
+
+    pixel[0] = 0.0f;
+    pixel[1] = 0.0f;
+    pixel[2] = 0.0f;
+
     float v2w[3];
 
     viewportToWindow(i, j, v2w);
@@ -133,10 +138,6 @@ void traceRay(float* pixel, int i, int j) {
     if (sphereHit != -1)
     {
 
-	pixel[0] = 0.0f;
-	pixel[1] = 0.0f;
-	pixel[2] = 0.0f;
-
 	float intersectPoint[3] = {0.0, 0.0, 0.0};
 	    
 	scalarMultiply(t_hitPoint, dir, 3);
@@ -158,7 +159,7 @@ void traceRay(float* pixel, int i, int j) {
 	// Ambient Lighting
 	float ambientLighting[3];
 	
-	scalarMultiplyCopy(spheres[sphereHit].k_ambient, bg.ambientColor, 3, ambientLighting);
+	scalarMultiplyCopy(spheres[sphereHit].k_ambient, Light0.color, 3, ambientLighting);
 
 	vec3Mult(ambientLighting, spheres[sphereHit].materialColor, ambientLighting);
 
@@ -217,10 +218,38 @@ void traceRay(float* pixel, int i, int j) {
     if (sphereHit == -1)
     {
 	planeHit = planeIntersection(cam.eye, dir, plane, &t_hitPoint);
+
+	float normal[3];
+	float LightDir[3];
+
+	scalarMultiplyCopy(-1.0, Light0.dir, 3, LightDir);
+
+	normal[0] = 0.0f;
+	normal[1] = 1.0f;
+	normal[2] = 0.0f;
 	
-	pixel[0] = plane.color[0];
-	pixel[1] = plane.color[1];
-	pixel[2] = plane.color[2];
+	// Ambient Lighting
+	float ambientLighting[3];
+	
+	scalarMultiplyCopy(plane.k_ambient, Light0.color, 3, ambientLighting);
+
+	vec3Mult(ambientLighting, plane.materialColor, ambientLighting);
+
+	vAdd(pixel, ambientLighting, 3, pixel);
+
+	// Diffuse Lighting
+
+	float NL = dotProduct(LightDir, normal);
+
+	float diffuseLighting[3];
+	    
+	scalarMultiplyCopy(spheres[sphereHit].k_diffuse, Light0.color, 3, diffuseLighting);
+	
+	vec3Mult(diffuseLighting, spheres[sphereHit].materialColor, diffuseLighting);
+    
+	scalarMultiply(NL, diffuseLighting, 3);
+
+	vAdd(pixel, diffuseLighting, 3, pixel);
     }
     
     if (sphereHit == -1  && !planeHit)
@@ -344,16 +373,15 @@ void defineSceneObjects()
     bg.backgroundColor[2] = 0.0f;
     bg.backgroundColor[3] = 1.0f;
 
-    bg.ambientColor[0] = 1.0f;
-    bg.ambientColor[1] = 1.0f;
-    bg.ambientColor[2] = 1.0f;
-
     // Define the plane
     plane.y = 0.0f;
     
-    plane.color[0] = 0.8f;
-    plane.color[1] = 0.8f;
-    plane.color[2] = 0.8f;
+    plane.materialColor[0] = 0.5f;
+    plane.materialColor[1] = 0.5f;
+    plane.materialColor[2] = 0.5f;
+
+    plane.k_ambient = 0.3f;
+    plane.k_diffuse = 1.0f;
 
     // Define the spheres
 
