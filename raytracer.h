@@ -43,6 +43,11 @@ struct Camera
     float w[3];
 };
 
+struct Light
+{
+    float dir[3];
+    float color[4];
+};
 
 void glInit();
 

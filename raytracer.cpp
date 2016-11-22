@@ -11,6 +11,7 @@
 static Sphere spheres[3];
 static Background bg;
 static Camera cam;
+static Light Light0;
 
 static int ScreenWidth;
 static int ScreenHeight;
@@ -114,9 +115,23 @@ void traceRay(float* pixel, int i, int j) {
 	if(sphereIntersection(cam.eye, dir, spheres[k], &t_hitPoint))
 	{
 	    sphereHit = 1;
-	    pixel[0] = spheres[k].diffuseColor[0];
-	    pixel[1] = spheres[k].diffuseColor[1];
-	    pixel[2] = spheres[k].diffuseColor[2];
+
+	    float intersectPoint[3] = {0.0, 0.0, 0.0};
+	    
+	    scalarMultiply(t_hitPoint, dir, 3);
+	    vAdd(dir, cam.eye, 3, intersectPoint);
+
+	    float normal[3] = {0.0, 0.0, 0.0};
+	    float center[3] = {spheres[k].center.x, spheres[k].center.y, spheres[k].center.z};
+
+	    vSubtract(intersectPoint, center, 3, intersectPoint);
+	    normalize(intersectPoint, 3);
+
+	    float NL = dotProduct(Light0.dir, intersectPoint);
+
+	    pixel[0] = spheres[k].diffuseColor[0] * NL;
+	    pixel[1] = spheres[k].diffuseColor[1] * NL;
+	    pixel[2] = spheres[k].diffuseColor[2] * NL;
 	    break;
 	}
     }
@@ -185,7 +200,16 @@ int sphereIntersection(float eye[], float dir[], Sphere sphere, float* hitPoint)
 
     if (disct >= 0)
     {
-	// TODO: calculate t to find exact point of intersection
+	
+	float delta = sqrt(disct);
+
+	float t1, t2;
+
+	t1 = (-b - delta)/(2.0*a);
+	t2 = (-b + delta)/(2.0*a);
+
+	*hitPoint = t1 < t2 ? t1 : t2;
+
 	return (1);
     }
     else
@@ -257,5 +281,16 @@ void defineSceneObjects()
     //spheres[2].specularColor[0] = ;
     //spheres[2].specularColor[1] = ;
     //spheres[2].specularColor[2] = ;
+
+    Light0.color[0] = 1.0f;
+    Light0.color[1] = 1.0f;
+    Light0.color[2] = 1.0f;
+    Light0.color[3] = 1.0f;
+
+    Light0.dir[0] = -50.0;
+    Light0.dir[1] = -50.0;
+    Light0.dir[2] = 300.0;
+    
+    normalize(Light0.dir, 3);
 
 }
