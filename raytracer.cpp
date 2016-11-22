@@ -318,9 +318,9 @@ void defineSceneObjects()
     // Define the plane
     plane.y = 0.0f;
     
-    plane.color[0] = 0.5f;
-    plane.color[1] = 0.5f;
-    plane.color[2] = 0.5f;
+    plane.color[0] = 0.8f;
+    plane.color[1] = 0.8f;
+    plane.color[2] = 0.8f;
 
     // Define the spheres
 
