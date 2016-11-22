@@ -315,6 +315,7 @@ int planeIntersection(float eye[], float dir[], Plane plane, float* hitPoint)
     else
     {
 	*hitPoint = -(eye[1]/dir[1]);
+	return(1);
     }
 
 }
@@ -380,7 +381,7 @@ void defineSceneObjects()
     spheres[1].k_ambient = 0.2f;
     spheres[1].k_diffuse = 0.7f;
     spheres[1].k_specular = 0.9f;
-    spheres[1].specParam = 2;
+    spheres[1].specParam = 5;
 
     spheres[2].center.x = 450.0f;
     spheres[2].center.y = 80.0f;
