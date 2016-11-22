@@ -63,4 +63,12 @@ inline void scalarMultiply(float s, float* vec, int size)
     }
 }
 
+inline void scalarMultiplyCopy(float s, float vec[], int size, float* result)
+{
+    for (int i = 0; i < size; i++)
+    {
+	result[i] = s * vec[i];
+    }
+}
+
 #endif

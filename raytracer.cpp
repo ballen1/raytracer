@@ -128,11 +128,22 @@ void traceRay(float* pixel, int i, int j) {
 	    vSubtract(intersectPoint, center, 3, intersectPoint);
 	    normalize(intersectPoint, 3);
 
+	    // Ambient Lighting
+
+	    scalarMultiplyCopy(1 - spheres[k].k_ambient, bg.ambientColor, 3, pixel);
+
+	    // Diffuse Lighting
+
 	    float NL = dotProduct(Light0.dir, intersectPoint);
 
-	    pixel[0] = spheres[k].diffuseColor[0] * NL;
-	    pixel[1] = spheres[k].diffuseColor[1] * NL;
-	    pixel[2] = spheres[k].diffuseColor[2] * NL;
+	    float diffuseLighting[3];
+	    
+	    scalarMultiplyCopy(1 - spheres[k].k_diffuse, spheres[k].diffuseColor, 3, diffuseLighting);
+	    
+	    scalarMultiply(NL, diffuseLighting, 3);
+
+	    vAdd(pixel, diffuseLighting, 3, pixel);
+
 	    break;
 	}
     }
@@ -261,6 +272,9 @@ void defineSceneObjects()
     //spheres[0].specularColor[1] = ;
     //spheres[0].specularColor[2] = ;
 
+    spheres[0].k_ambient = 0.95f;
+    spheres[0].k_diffuse = 0.0f;
+
     spheres[1].center.x = 100.0f;
     spheres[1].center.y = 100.0f;
     spheres[1].center.z = -10.0f;
@@ -271,6 +285,9 @@ void defineSceneObjects()
     //spheres[1].specularColor[0] = ;
     //spheres[1].specularColor[1] = ;
     //spheres[1].specularColor[2] = ;
+
+    spheres[1].k_ambient = 0.95f;
+    spheres[1].k_diffuse = 0.0f;
 
     spheres[2].center.x = 450.0f;
     spheres[2].center.y = 450.0f;
@@ -283,13 +300,15 @@ void defineSceneObjects()
     //spheres[2].specularColor[1] = ;
     //spheres[2].specularColor[2] = ;
 
+    spheres[2].k_ambient = 0.95f;
+    spheres[2].k_diffuse = 0.0f;
+
     Light0.color[0] = 1.0f;
     Light0.color[1] = 1.0f;
     Light0.color[2] = 1.0f;
-    Light0.color[3] = 1.0f;
 
-    Light0.dir[0] = -50.0;
-    Light0.dir[1] = -50.0;
+    Light0.dir[0] = -150.0;
+    Light0.dir[1] = -150.0;
     Light0.dir[2] = 300.0;
     
     normalize(Light0.dir, 3);

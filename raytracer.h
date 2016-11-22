@@ -17,8 +17,12 @@ struct Sphere
 {
     Vec3 center;
     float radius;
+
     float diffuseColor[3];
     float specularColor[3];
+
+    float k_ambient;
+    float k_diffuse;
 };
 
 struct RectanglePlane
@@ -46,7 +50,7 @@ struct Camera
 struct Light
 {
     float dir[3];
-    float color[4];
+    float color[3];
 };
 
 void glInit();
