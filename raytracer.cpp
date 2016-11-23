@@ -167,18 +167,9 @@ void traceRay(float* pixel, int i, int j) {
 
 	    // Diffuse Lighting
 
-	    float NL = dotProduct(LightDir, normal);
-
-	    float diffuseLighting[3];
-	    
-	    scalarMultiplyCopy(spheres[sphereHit].k_diffuse, Light0.color, 3, diffuseLighting);
-	
-	    vec3Mult(diffuseLighting, spheres[sphereHit].materialColor, diffuseLighting);
-    
-	    scalarMultiply(NL, diffuseLighting, 3);
-
-	    vAdd(pixel, diffuseLighting, 3, pixel);
-
+	    addDiffuseLighting(normal, LightDir, spheres[sphereHit].k_diffuse,
+			       Light0.color, spheres[sphereHit].materialColor,
+			       pixel);
 
 	    // Specular Lighting
 	    float V[3];
@@ -239,18 +230,11 @@ void traceRay(float* pixel, int i, int j) {
 	if (!isInShadow(intersectPoint, LightDir, normal))
 	{
 	    // Diffuse Lighting
+	    	    
+	    addDiffuseLighting(normal, LightDir, plane.k_diffuse,
+			       Light0.color, plane.materialColor,
+			       pixel);
 
-	    float NL = dotProduct(LightDir, normal);
-
-	    float diffuseLighting[3];
-	    
-	    scalarMultiplyCopy(plane.k_diffuse, Light0.color, 3, diffuseLighting);
-	
-	    vec3Mult(diffuseLighting, plane.materialColor, diffuseLighting);
-    
-	    scalarMultiply(NL, diffuseLighting, 3);
-
-	    vAdd(pixel, diffuseLighting, 3, pixel);
 	}
     }
     
@@ -279,6 +263,23 @@ void addAmbientLighting(float k, float LightColor[], float materialColor[], floa
     vec3Mult(ambientLighting, materialColor, ambientLighting);
 
     vAdd(pixel, ambientLighting, 3, pixel);
+
+}
+
+void addDiffuseLighting(float normal[], float lightDir[], float k,
+			float lightColor[], float materialColor[],
+			float* pixel)
+{
+    
+    float NL = dotProduct(lightDir, normal);
+
+    float diffuseLighting[3];
+
+    scalarMultiplyCopy(k, lightColor, 3, diffuseLighting);
+    vec3Mult(diffuseLighting, materialColor, diffuseLighting);
+    scalarMultiply(NL, diffuseLighting, 3);
+
+    vAdd(pixel, diffuseLighting, 3, pixel);
 
 }
 

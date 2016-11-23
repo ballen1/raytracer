@@ -94,6 +94,8 @@ void calculateParametricPoint(float t, float dir[], float origin[], float* resul
 
 void addAmbientLighting(float k, float LightColor[], float materialColor[], float* pixel);
 
-void addDiffuseLighting();
+void addDiffuseLighting(float normal[], float lightDir[], float k,
+                        float lightColor[], float materialColor[],
+                        float* pixel);
 
 #endif
