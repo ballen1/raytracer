@@ -172,35 +172,10 @@ void traceRay(float* pixel, int i, int j) {
 			       pixel);
 
 	    // Specular Lighting
-	    float V[3];
 
-	    V[0] = (cam.eye[0] - intersectPoint[0]);
-	    V[1] = (cam.eye[1] - intersectPoint[1]);
-	    V[2] = (cam.eye[2] - intersectPoint[2]);
-
-	    normalize(V, 3);
-
-	    float intermediate[3];
-	    float dot;
-
-	    dot = dotProduct(normal, LightDir)*2.0;
-	    scalarMultiplyCopy(dot, normal, 3, intermediate);
-
-	    float R[3];
-
-	    vAdd(intermediate, Light0.dir, 3, R);
-
-	    float VR = dotProduct(R, V);
-
-	    if (VR >= 0)
-	    {
-		float specularMultiplier = pow(VR, spheres[sphereHit].specParam) * spheres[sphereHit].k_specular;
-
-		float specularLighting[3];
-		scalarMultiplyCopy(specularMultiplier, Light0.color, 3, specularLighting);
-
-		vAdd(pixel, specularLighting, 3, pixel);
-	    }	    
+	    addSpecularLighting(cam.eye, intersectPoint, normal, LightDir, Light0.dir,
+				spheres[sphereHit].specParam, spheres[sphereHit].k_specular,
+				Light0.color, pixel);
 	}
     }
 
@@ -280,6 +255,48 @@ void addDiffuseLighting(float normal[], float lightDir[], float k,
     scalarMultiply(NL, diffuseLighting, 3);
 
     vAdd(pixel, diffuseLighting, 3, pixel);
+
+}
+
+
+void addSpecularLighting(float camOrigin[],
+			 float intersectPoint[],
+			 float normal[],
+			 float lightDir[],
+			 float lightTravelDir[],
+			 float specularParameter,
+			 float k,
+			 float lightColor[],
+			 float* pixel)
+{
+    
+    float V[3];
+
+    V[0] = (camOrigin[0] - intersectPoint[0]);
+    V[1] = (camOrigin[1] - intersectPoint[1]);
+    V[2] = (camOrigin[2] - intersectPoint[2]);
+
+    normalize(V, 3);
+
+    float intermediate[3];
+    
+    scalarMultiplyCopy((2.0*dotProduct(normal, lightDir)), normal, 3, intermediate);
+
+    float R[3];
+
+    vAdd(intermediate, lightTravelDir, 3, R);
+
+    float VR = dotProduct(R, V);
+
+    if (VR >= 0)
+    {
+	float specularMultiplier = pow(VR, (specularParameter * k));
+	
+	float specularLighting[3];
+	scalarMultiplyCopy(specularMultiplier, lightColor, 3, specularLighting);
+	
+	vAdd(pixel, specularLighting, 3, pixel);
+    }
 
 }
 

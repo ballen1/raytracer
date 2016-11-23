@@ -98,4 +98,14 @@ void addDiffuseLighting(float normal[], float lightDir[], float k,
                         float lightColor[], float materialColor[],
                         float* pixel);
 
+void addSpecularLighting(float camOrigin[],
+			 float intersectPoint[],
+			 float normal[],
+			 float lightDir[],
+			 float lightTravelDir[],
+			 float specularParameter,
+			 float k,
+			 float lightColor[],
+			 float* pixel);
+
 #endif
