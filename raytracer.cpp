@@ -75,9 +75,6 @@ void display()
 
     float pixel[3];
 
-    spheres[0].center.y += 5.0f;
-
-
     for (int j = 0; j < ScreenHeight; j++)
     {   
 	for (int i = 0; i < ScreenWidth; i++)
@@ -93,6 +90,8 @@ void display()
     glPopMatrix();
 
     glutSwapBuffers();
+
+    updateSpherePositions(spheres, 3);
 
     glutPostRedisplay();
 }
@@ -167,7 +166,7 @@ void traceRay(float* pixel, int i, int j) {
 
 	vAdd(pixel, ambientLighting, 3, pixel);
 
-	if (!isInShadow(intersectPoint, LightDir, sphereHit))
+	if (!isInShadow(intersectPoint, LightDir, normal, sphereHit))
 	{
 
 	    // Diffuse Lighting
@@ -248,7 +247,7 @@ void traceRay(float* pixel, int i, int j) {
 
 	vAdd(pixel, ambientLighting, 3, pixel);
 
-	if (!isInShadow(intersectPoint, LightDir))
+	if (!isInShadow(intersectPoint, LightDir, normal))
 	{
 	    // Diffuse Lighting
 
@@ -274,7 +273,7 @@ void traceRay(float* pixel, int i, int j) {
     }
 }
 
-int isInShadow(float point[], float light[], int excludeSphere)
+int isInShadow(float point[], float light[], float normal[], int excludeSphere)
 {
 
     int shadow = 0;
@@ -289,16 +288,20 @@ int isInShadow(float point[], float light[], int excludeSphere)
     vAdd(light, point, 3, direction);
 
     vAdd(startingPoint, offset, 3, startingPoint);
-
-    for (int i = 0; i < 3; i++)
+    
+    if (dotProduct(normal, light) >= 0)
     {
-	float hitPoint;
-	if (i != excludeSphere && sphereIntersection(startingPoint, light, spheres[i], &hitPoint))
+	for (int i = 0; i < 3; i++)
 	{
-	    if (hitPoint > 1)
+	    float hitPoint;
+	    if (i != excludeSphere && sphereIntersection(startingPoint, light, spheres[i], &hitPoint))
 	    {
-		shadow = 1;
-		break;
+		if (hitPoint > 1)
+		{
+
+		    shadow = 1;
+		    break;
+		}
 	    }
 	}
     }
@@ -395,6 +398,22 @@ int planeIntersection(float eye[], float dir[], Plane plane, float* hitPoint)
 
 }
 
+void updateSpherePositions(Sphere* l_Sphere, int size)
+{
+
+    for (int i = 0; i < size; i++)
+    {
+	l_Sphere[i].center.y += l_Sphere[i].y_move;
+	
+	if ((l_Sphere[i].y_move > 0 && l_Sphere[i].center.y >= l_Sphere[i].y_max) ||
+	    (l_Sphere[i].y_move < 0 && l_Sphere[i].center.y <= l_Sphere[i].y_min))
+	{
+	    l_Sphere[i].y_move = -l_Sphere[i].y_move;
+	}
+    }
+
+}
+
 void defineSceneObjects()
 {
     // Define the camera
@@ -433,39 +452,48 @@ void defineSceneObjects()
 
     spheres[0].center.x = 100.0f;
     spheres[0].center.y = 100.0f;
-    spheres[0].center.z = 0.0f;
-    spheres[0].radius = 100.0f;
+    spheres[0].center.z = 100.0f;
+    spheres[0].radius = 50.0f;
+    spheres[0].y_max = 300.0f;
+    spheres[0].y_min = 100.0f;
+    spheres[0].y_move = 6;
     spheres[0].materialColor[0] = 1.0f;
     spheres[0].materialColor[1] = 0.0f;
     spheres[0].materialColor[2] = 0.0f;
 
-    spheres[0].k_ambient = 0.2f;
+    spheres[0].k_ambient = 0.4f;
     spheres[0].k_diffuse = 0.7f;
     spheres[0].k_specular = 0.9f;
     spheres[0].specParam = 10;
 
     spheres[1].center.x = 250.0f;
-    spheres[1].center.y = 50.0f;
-    spheres[1].center.z = 100.0f;
-    spheres[1].radius = 50.0f;
+    spheres[1].center.y = 101.0f;
+    spheres[1].center.z = 0.0f;
+    spheres[1].radius = 100.0f;
+    spheres[1].y_max = 450.0f;
+    spheres[1].y_min = 101.0f;
+    spheres[1].y_move = 2;
     spheres[1].materialColor[0] = 0.0f;
     spheres[1].materialColor[1] = 1.0f;
     spheres[1].materialColor[2] = 0.0f;
 
-    spheres[1].k_ambient = 0.2f;
+    spheres[1].k_ambient = 0.15f;
     spheres[1].k_diffuse = 0.7f;
-    spheres[1].k_specular = 0.9f;
+    spheres[1].k_specular = 0.7f;
     spheres[1].specParam = 5;
 
-    spheres[2].center.x = 450.0f;
+    spheres[2].center.x = 400.0f;
     spheres[2].center.y = 80.0f;
-    spheres[2].center.z = 20.0f;
+    spheres[2].center.z = 200.0f;
     spheres[2].radius = 75.0f;
+    spheres[2].y_max = 250.0f;
+    spheres[2].y_min = 80.0f;
+    spheres[2].y_move = 3;
     spheres[2].materialColor[0] = 0.0f;
     spheres[2].materialColor[1] = 0.0f;
     spheres[2].materialColor[2] = 1.0f;
 
-    spheres[2].k_ambient = 0.2f;
+    spheres[2].k_ambient = 0.4f;
     spheres[2].k_diffuse = 0.7f;
     spheres[2].k_specular = 0.8f;
     spheres[2].specParam = 20;

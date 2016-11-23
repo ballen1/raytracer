@@ -25,6 +25,11 @@ struct Sphere
     float k_specular;
 
     float specParam;
+
+    float y_max;
+    float y_min;
+
+    int y_move;
 };
 
 struct Plane
@@ -79,6 +84,8 @@ int sphereIntersection(float eye[], float dir[], Sphere sphere, float* hitPoint)
 
 int planeIntersection(float eye[], float dir[], Plane plane, float* hitPoint);
 
-int isInShadow(float point[], float light[], int excludeSphere = -1);
+int isInShadow(float point[], float light[], float normal[], int excludeSphere = -1);
+
+void updateSpherePositions(Sphere* l_Sphere, int size);
 
 #endif
