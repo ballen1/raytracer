@@ -218,6 +218,12 @@ void traceRay(float* pixel, int i, int j) {
     if (sphereHit == -1)
     {
 	planeHit = planeIntersection(cam.eye, dir, plane, &t_hitPoint);
+	
+	float intersectPoint[3] = {0.0, 0.0, 0.0};
+	    
+	scalarMultiply(t_hitPoint, dir, 3);
+
+	vAdd(dir, cam.eye, 3, intersectPoint);
 
 	float normal[3];
 	float LightDir[3];
@@ -237,19 +243,22 @@ void traceRay(float* pixel, int i, int j) {
 
 	vAdd(pixel, ambientLighting, 3, pixel);
 
-	// Diffuse Lighting
+	if (!isInShadow(intersectPoint, LightDir))
+	{
+	    // Diffuse Lighting
 
-	float NL = dotProduct(LightDir, normal);
+	    float NL = dotProduct(LightDir, normal);
 
-	float diffuseLighting[3];
+	    float diffuseLighting[3];
 	    
-	scalarMultiplyCopy(spheres[sphereHit].k_diffuse, Light0.color, 3, diffuseLighting);
+	    scalarMultiplyCopy(plane.k_diffuse, Light0.color, 3, diffuseLighting);
 	
-	vec3Mult(diffuseLighting, spheres[sphereHit].materialColor, diffuseLighting);
+	    vec3Mult(diffuseLighting, plane.materialColor, diffuseLighting);
     
-	scalarMultiply(NL, diffuseLighting, 3);
+	    scalarMultiply(NL, diffuseLighting, 3);
 
-	vAdd(pixel, diffuseLighting, 3, pixel);
+	    vAdd(pixel, diffuseLighting, 3, pixel);
+	}
     }
     
     if (sphereHit == -1  && !planeHit)
@@ -258,6 +267,28 @@ void traceRay(float* pixel, int i, int j) {
 	pixel[1] = bg.backgroundColor[1];
 	pixel[2] = bg.backgroundColor[2];
     }
+}
+
+int isInShadow(float point[], float light[])
+{
+
+    int shadow = 0;
+    
+    float direction[3];
+
+    vAdd(light, point, 3, direction);
+
+    for (int i = 0; i < 3; i++)
+    {
+	float hitPoint;
+	if (sphereIntersection(point, light, spheres[i], &hitPoint))
+	{
+	    shadow = 1;
+	    break;
+	}
+    }
+    
+    return (shadow);
 }
 
 void calculateCameraCoordinateSystem()
@@ -300,9 +331,9 @@ int sphereIntersection(float eye[], float dir[], Sphere sphere, float* hitPoint)
 
     float rayOrigin[3];
 
-    rayOrigin[0] = cam.eye[0];
-    rayOrigin[1] = cam.eye[1];
-    rayOrigin[2] = cam.eye[2];
+    rayOrigin[0] = eye[0];
+    rayOrigin[1] = eye[1];
+    rayOrigin[2] = eye[2];
 
     rayOrigin[0] -= sphere.center.x;
     rayOrigin[1] -= sphere.center.y;
@@ -353,11 +384,11 @@ void defineSceneObjects()
 {
     // Define the camera
     cam.eye[0] = 300.0f;
-    cam.eye[1] = 25.0f;
-    cam.eye[2] = 2000.0f;
+    cam.eye[1] = 300.0f;
+    cam.eye[2] = 1500.0f;
     
     cam.lookAt[0] = 300.0f;
-    cam.lookAt[1] = 50.0f;
+    cam.lookAt[1] = 150.0f;
     cam.lookAt[2] = 0.0f;
 
     cam.up[0] = 0.0f;
@@ -376,9 +407,9 @@ void defineSceneObjects()
     // Define the plane
     plane.y = 0.0f;
     
-    plane.materialColor[0] = 0.5f;
-    plane.materialColor[1] = 0.5f;
-    plane.materialColor[2] = 0.5f;
+    plane.materialColor[0] = 0.8f;
+    plane.materialColor[1] = 0.8f;
+    plane.materialColor[2] = 0.8f;
 
     plane.k_ambient = 0.3f;
     plane.k_diffuse = 1.0f;
@@ -429,8 +460,8 @@ void defineSceneObjects()
     Light0.color[2] = 1.0f;
 
     Light0.dir[0] = 150.0;
-    Light0.dir[1] = 0.0;
-    Light0.dir[2] = -250.0;
+    Light0.dir[1] = -150.0;
+    Light0.dir[2] = -50.0;
     
     normalize(Light0.dir, 3);
 
