@@ -471,7 +471,7 @@ void defineSceneObjects()
     spheres[0].center.z = 100.0f;
     spheres[0].radius = 50.0f;
     spheres[0].y_max = 300.0f;
-    spheres[0].y_min = 100.0f;
+    spheres[0].y_min = 56.0f;
     spheres[0].y_move = 6;
     spheres[0].materialColor[0] = 1.0f;
     spheres[0].materialColor[1] = 0.0f;
@@ -486,7 +486,7 @@ void defineSceneObjects()
     spheres[1].center.y = 101.0f;
     spheres[1].center.z = 0.0f;
     spheres[1].radius = 100.0f;
-    spheres[1].y_max = 450.0f;
+    spheres[1].y_max = 350.0f;
     spheres[1].y_min = 101.0f;
     spheres[1].y_move = 2;
     spheres[1].materialColor[0] = 0.0f;
