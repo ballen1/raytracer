@@ -6,6 +6,8 @@
 #define WINDOW_STARTX 100
 #define WINDOW_STARTY 100
 
+#define SPHERE_COUNT 3
+
 struct Vec3 
 {
     float x;
@@ -87,5 +89,11 @@ int planeIntersection(float eye[], float dir[], Plane plane, float* hitPoint);
 int isInShadow(float point[], float light[], float normal[], int excludeSphere = -1);
 
 void updateSpherePositions(Sphere* l_Sphere, int size);
+
+void calculateParametricPoint(float t, float dir[], float origin[], float* result);
+
+void addAmbientLighting(float k, float LightColor[], float materialColor[], float* pixel);
+
+void addDiffuseLighting();
 
 #endif

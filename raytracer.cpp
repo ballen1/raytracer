@@ -98,6 +98,7 @@ void display()
 
 void traceRay(float* pixel, int i, int j) {
 
+    // Clear the pixel
 
     pixel[0] = 0.0f;
     pixel[1] = 0.0f;
@@ -121,7 +122,7 @@ void traceRay(float* pixel, int i, int j) {
     
     t_hitPoint = 0;
 
-    for (int k = 0; k < 3; k++)
+    for (int k = 0; k < SPHERE_COUNT; k++)
     {
 	if(sphereIntersection(cam.eye, dir, spheres[k], &t_currentHitPoint))
 	{
@@ -135,16 +136,15 @@ void traceRay(float* pixel, int i, int j) {
 	}
     }
 
+    // If a sphere was hit, the sphereHit will be set with the index of the sphere
 
     if (sphereHit != -1)
     {
 
-	float intersectPoint[3] = {0.0, 0.0, 0.0};
-	    
-	scalarMultiply(t_hitPoint, dir, 3);
-
-	vAdd(dir, cam.eye, 3, intersectPoint);
-
+	float intersectPoint[3];
+	    	
+	calculateParametricPoint(t_hitPoint, dir, cam.eye, intersectPoint);
+	
 	float normal[3];
 	float LightDir[3];
 
@@ -158,13 +158,9 @@ void traceRay(float* pixel, int i, int j) {
 	normalize(normal, 3);
 
 	// Ambient Lighting
-	float ambientLighting[3];
-	
-	scalarMultiplyCopy(spheres[sphereHit].k_ambient, Light0.color, 3, ambientLighting);
 
-	vec3Mult(ambientLighting, spheres[sphereHit].materialColor, ambientLighting);
-
-	vAdd(pixel, ambientLighting, 3, pixel);
+	addAmbientLighting(spheres[sphereHit].k_ambient, Light0.color,
+			   spheres[sphereHit].materialColor, pixel);
 
 	if (!isInShadow(intersectPoint, LightDir, normal, sphereHit))
 	{
@@ -223,11 +219,9 @@ void traceRay(float* pixel, int i, int j) {
     {
 	planeHit = planeIntersection(cam.eye, dir, plane, &t_hitPoint);
 	
-	float intersectPoint[3] = {0.0, 0.0, 0.0};
+	float intersectPoint[3];
 	    
-	scalarMultiply(t_hitPoint, dir, 3);
-
-	vAdd(dir, cam.eye, 3, intersectPoint);
+	calculateParametricPoint(t_hitPoint, dir, cam.eye, intersectPoint);
 
 	float normal[3];
 	float LightDir[3];
@@ -239,13 +233,8 @@ void traceRay(float* pixel, int i, int j) {
 	normal[2] = 0.0f;
 	
 	// Ambient Lighting
-	float ambientLighting[3];
 	
-	scalarMultiplyCopy(plane.k_ambient, Light0.color, 3, ambientLighting);
-
-	vec3Mult(ambientLighting, plane.materialColor, ambientLighting);
-
-	vAdd(pixel, ambientLighting, 3, pixel);
+	addAmbientLighting(plane.k_ambient, Light0.color, plane.materialColor, pixel);
 
 	if (!isInShadow(intersectPoint, LightDir, normal))
 	{
@@ -273,6 +262,26 @@ void traceRay(float* pixel, int i, int j) {
     }
 }
 
+void calculateParametricPoint(float t, float dir[], float origin[], float* result)
+{
+    scalarMultiplyCopy(t, dir, 3, result);
+
+    vAdd(result, origin, 3, result);    
+}
+
+void addAmbientLighting(float k, float LightColor[], float materialColor[], float* pixel)
+{
+
+    float ambientLighting[3];
+
+    scalarMultiplyCopy(k, LightColor, 3, ambientLighting);
+
+    vec3Mult(ambientLighting, materialColor, ambientLighting);
+
+    vAdd(pixel, ambientLighting, 3, pixel);
+
+}
+
 int isInShadow(float point[], float light[], float normal[], int excludeSphere)
 {
 
@@ -280,21 +289,14 @@ int isInShadow(float point[], float light[], float normal[], int excludeSphere)
     
     float direction[3];
 
-    float startingPoint[3] = {point[0], point[1], point[2]};
-    float offset[3];
-
-    scalarMultiplyCopy(0.00001, direction, 3, offset);
-
     vAdd(light, point, 3, direction);
 
-    vAdd(startingPoint, offset, 3, startingPoint);
-    
     if (dotProduct(normal, light) >= 0)
     {
-	for (int i = 0; i < 3; i++)
+	for (int i = 0; i < SPHERE_COUNT; i++)
 	{
 	    float hitPoint;
-	    if (i != excludeSphere && sphereIntersection(startingPoint, light, spheres[i], &hitPoint))
+	    if (i != excludeSphere && sphereIntersection(point, light, spheres[i], &hitPoint))
 	    {
 		if (hitPoint > 1)
 		{
@@ -349,13 +351,9 @@ int sphereIntersection(float eye[], float dir[], Sphere sphere, float* hitPoint)
 
     float rayOrigin[3];
 
-    rayOrigin[0] = eye[0];
-    rayOrigin[1] = eye[1];
-    rayOrigin[2] = eye[2];
-
-    rayOrigin[0] -= sphere.center.x;
-    rayOrigin[1] -= sphere.center.y;
-    rayOrigin[2] -= sphere.center.z;
+    rayOrigin[0] = eye[0] - sphere.center.x;
+    rayOrigin[1] = eye[1] - sphere.center.y;
+    rayOrigin[2] = eye[2] - sphere.center.z;
 
     b = 2*dotProduct(rayOrigin, dir);
 
