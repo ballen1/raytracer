@@ -75,6 +75,8 @@ void display()
 
     float pixel[3];
 
+    spheres[0].center.y += 5.0f;
+
 
     for (int j = 0; j < ScreenHeight; j++)
     {   
@@ -165,52 +167,55 @@ void traceRay(float* pixel, int i, int j) {
 
 	vAdd(pixel, ambientLighting, 3, pixel);
 
-	// Diffuse Lighting
-
-	float NL = dotProduct(LightDir, normal);
-
-	float diffuseLighting[3];
-	    
-	scalarMultiplyCopy(spheres[sphereHit].k_diffuse, Light0.color, 3, diffuseLighting);
-	
-	vec3Mult(diffuseLighting, spheres[sphereHit].materialColor, diffuseLighting);
-    
-	scalarMultiply(NL, diffuseLighting, 3);
-
-	vAdd(pixel, diffuseLighting, 3, pixel);
-
-
-	// Specular Lighting
-	float V[3];
-
-	V[0] = (cam.eye[0] - intersectPoint[0]);
-	V[1] = (cam.eye[1] - intersectPoint[1]);
-	V[2] = (cam.eye[2] - intersectPoint[2]);
-
-	normalize(V, 3);
-
-	float intermediate[3];
-	float dot;
-
-	dot = dotProduct(normal, LightDir)*2.0;
-	scalarMultiplyCopy(dot, normal, 3, intermediate);
-
-	float R[3];
-
-	vAdd(intermediate, Light0.dir, 3, R);
-
-	float VR = dotProduct(R, V);
-
-	if (VR >= 0)
+	if (!isInShadow(intersectPoint, LightDir, sphereHit))
 	{
-	    float specularMultiplier = pow(VR, spheres[sphereHit].specParam) * spheres[sphereHit].k_specular;
 
-	    float specularLighting[3];
-	    scalarMultiplyCopy(specularMultiplier, Light0.color, 3, specularLighting);
+	    // Diffuse Lighting
 
-	    vAdd(pixel, specularLighting, 3, pixel);
-	}	    
+	    float NL = dotProduct(LightDir, normal);
 
+	    float diffuseLighting[3];
+	    
+	    scalarMultiplyCopy(spheres[sphereHit].k_diffuse, Light0.color, 3, diffuseLighting);
+	
+	    vec3Mult(diffuseLighting, spheres[sphereHit].materialColor, diffuseLighting);
+    
+	    scalarMultiply(NL, diffuseLighting, 3);
+
+	    vAdd(pixel, diffuseLighting, 3, pixel);
+
+
+	    // Specular Lighting
+	    float V[3];
+
+	    V[0] = (cam.eye[0] - intersectPoint[0]);
+	    V[1] = (cam.eye[1] - intersectPoint[1]);
+	    V[2] = (cam.eye[2] - intersectPoint[2]);
+
+	    normalize(V, 3);
+
+	    float intermediate[3];
+	    float dot;
+
+	    dot = dotProduct(normal, LightDir)*2.0;
+	    scalarMultiplyCopy(dot, normal, 3, intermediate);
+
+	    float R[3];
+
+	    vAdd(intermediate, Light0.dir, 3, R);
+
+	    float VR = dotProduct(R, V);
+
+	    if (VR >= 0)
+	    {
+		float specularMultiplier = pow(VR, spheres[sphereHit].specParam) * spheres[sphereHit].k_specular;
+
+		float specularLighting[3];
+		scalarMultiplyCopy(specularMultiplier, Light0.color, 3, specularLighting);
+
+		vAdd(pixel, specularLighting, 3, pixel);
+	    }	    
+	}
     }
 
     int planeHit = 0;
@@ -269,22 +274,32 @@ void traceRay(float* pixel, int i, int j) {
     }
 }
 
-int isInShadow(float point[], float light[])
+int isInShadow(float point[], float light[], int excludeSphere)
 {
 
     int shadow = 0;
     
     float direction[3];
 
+    float startingPoint[3] = {point[0], point[1], point[2]};
+    float offset[3];
+
+    scalarMultiplyCopy(0.00001, direction, 3, offset);
+
     vAdd(light, point, 3, direction);
+
+    vAdd(startingPoint, offset, 3, startingPoint);
 
     for (int i = 0; i < 3; i++)
     {
 	float hitPoint;
-	if (sphereIntersection(point, light, spheres[i], &hitPoint))
+	if (i != excludeSphere && sphereIntersection(startingPoint, light, spheres[i], &hitPoint))
 	{
-	    shadow = 1;
-	    break;
+	    if (hitPoint > 1)
+	    {
+		shadow = 1;
+		break;
+	    }
 	}
     }
     

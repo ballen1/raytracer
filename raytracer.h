@@ -79,6 +79,6 @@ int sphereIntersection(float eye[], float dir[], Sphere sphere, float* hitPoint)
 
 int planeIntersection(float eye[], float dir[], Plane plane, float* hitPoint);
 
-int isInShadow(float point[], float light[]);
+int isInShadow(float point[], float light[], int excludeSphere = -1);
 
 #endif
