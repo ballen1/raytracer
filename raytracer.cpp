@@ -254,7 +254,10 @@ void addDiffuseLighting(float normal[], float lightDir[], float k,
     vec3Mult(diffuseLighting, materialColor, diffuseLighting);
     scalarMultiply(NL, diffuseLighting, 3);
 
-    vAdd(pixel, diffuseLighting, 3, pixel);
+    if (diffuseLighting[0] >= 0 && diffuseLighting[1] >= 0 && diffuseLighting[2] >= 0)
+    {
+	vAdd(pixel, diffuseLighting, 3, pixel);
+    }
 
 }
 
